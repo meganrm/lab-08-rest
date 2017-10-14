@@ -1,63 +1,80 @@
 'use strict';
 
-const Note = require('../model/note.js');
+const Note = require('../note/model.js');
 const router = require('../lib/router.js');
+const routes = router.routeHandlers;
+const send = require('../lib/sendResponse');
 
-let notes = {};
+routes.post('/api/notes', (req,res) => {
+  if (! (req.body.title || req.body.contents)) {
+    return send.sendResponse(res, 400, 'needs a title and contents');
+  }
+  let note = new Note(req.body);
+  send.sendJSON(res, 200, note);
+  note.addNote();
 
-let sendStatus = (res, status, text) => {
-  res.writeHead(status);
-}
+});
 
-let sendJSON = (res, status, data) => {
-  res.writeHead(status, {
-    'Content-Type' : 'application/json'
-  })
-  res.end(JSON.stringify(data))
-}
-
-router.post('/api/notes', (req,res) => {
-    // 400 when?
-    // Save the note to the stack
-    // Send 200
-    if (! req.body.title) {
-
+routes.delete('/api/notes', (req, res) => {
+  let isIdQuery = req.url && req.url.query && req.url.query.id ? true: false;
+  if (isIdQuery) {
+    let id = req.url.query.id;
+    let note = Object.assign({}, Note.allNotes[id]);
+    if (note) {
+      Note.allNotes[id] = null;
+      delete Note.allNotes[id];
+      if (!Note.allNotes[id]) {
+        send.sendResponse(res, 200, `deleted ${JSON.stringify(note)} successfully`);
+      } else {
+        send.sendResponse(res, 400, `please try to delete again`);
+      }
+    } else {
+      send.sendResponse(res, 404, `no note with the ID ${req.url.query.id}`);
     }
-    let not = new Note(req.body);
-    notes[node.id]
+
+  } else {
+    send.sendResponse(res, 400, `need ID`);
+  }
 });
 
-router.delete('/api/notes', (req,res) => {
-    // Do I have an id?
-    // Is it valid
-    // Nuke it
-    // Send 200 if all is well
-
-});
-
-router.put('/api/notes', (req,res) => {
-    // Do I have an id?
-    // Is it valid
-    // Replace it
-    // Send 200 if all is well
+routes.put('/api/notes', (req,res) => {
+  // Do I have an id?
+  // Is it valid
+  // Replace it
+  // Send 200 if all is well
 
 });
 
-router.patch('/api/notes', (req,res) => {
-    // Do I have an id?
-    // Is it valid
-    // Update it
-    // Send 200 if all is well
+routes.patch('/api/notes', (req,res) => {
+  // Do I have an id?
+  // Is it valid
+  // Update it
+  // Send 200 if all is well
 
 });
 
-router.get('/api/notes', (req,res) => {
-  let id = 
-    // If we have an id
-        // try and pull it from the stack
-            // send it
-        // 404 not found or 400 invalid query?
-
-    // List all
-
+routes.get('/api/notes', (req,res) => {
+  let sendBody;
+  let status = 404;
+  let isIdQuery = req.url && req.url.query && req.url.query.id ? true: false;
+  if (isIdQuery) {
+    let id = req.url.query.id;
+    let note = Note.allNotes[id];
+    if (note) {
+      status = 200;
+      sendBody = note;
+    } else {
+      status = 404;
+      sendBody = `cannot find a note for the id: ${id}`;
+    }
+  } else {
+    sendBody = Note.allNotes;
+  }
+  if (sendBody) {
+    status = 200;
+    send.sendJSON(res, status, sendBody);
+  } else {
+    status = 404;
+    send.sendResponse(res, status, 'no notes! this is pretty terrible');
+  }
 });

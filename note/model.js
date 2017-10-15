@@ -5,9 +5,9 @@ const uuid = require('uuid/v1');
 class Note {
 
   constructor(opts) {
-    this.id = uuid();
-    this.title = opts.title;
+    this.id = opts.id || uuid();
     this.date = new Date();
+    this.title = opts.title;
     this.contents = opts.contents;
   }
 

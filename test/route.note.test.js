@@ -26,7 +26,7 @@ describe('api/notes', function() {
         .then(res=>{
           expect(res.status).toEqual(200);
           expect(res.body.title).toEqual('title');
-        })
+        });
 
     });
 

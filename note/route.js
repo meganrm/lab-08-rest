@@ -28,7 +28,7 @@ function sendNote(req, res){
     sendBody = `cannot find a note for the id: ${id}`;
     send.sendResponse(res, status, sendBody);
   }
-};
+}
 
 function idQueryTest(req, res){
   let ret = false;

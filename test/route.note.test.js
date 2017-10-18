@@ -26,7 +26,7 @@ describe('api/notes', function() {
         .then(res=>{
           expect(res.status).toEqual(200);
           expect(res.body.title).toEqual('title');
-        });
+        })
 
     });
 
@@ -42,22 +42,22 @@ describe('api/notes', function() {
       return superagent.get(`${url}?id=foo`)
         .catch(error => {
           expect(error.status).toEqual(404);
+          expect(error.response.text).toEqual('cannot find a note for the id: foo');
         })
       ;
     });
-
   });
 
   describe('DELETE /api/notes', () => {
 
-    test('should return the deleted note', () => {
+    test('should return the 200 if deleted note', () => {
       //return is key, superagent will wait til resolved
-      let id = 'testID';
-      Note.allNotes[id] = {title: 'title', contents: 'body'};
+      let id = 'deleteTestID';
+      Note.allNotes[id] = {id: id, title: 'title to be deleted', contents: 'body to be deleted'};
       return superagent.delete(url + '?id=' + id)
         .then(res=>{
+          expect(res.text).toEqual('deleted {"id":"deleteTestID","title":"title to be deleted","contents":"body to be deleted"} successfully');
           expect(res.status).toEqual(200);
-          expect(res.text).toEqual('deleted {"title":"title","contents":"body"} successfully');
         });
     });
 
@@ -65,6 +65,7 @@ describe('api/notes', function() {
     test('should respond with a 404 if note is not there', () => {
       return superagent.delete(`${url}?id=foo`)
         .catch(error => {
+          expect(error.response.text).toEqual('no note with the ID foo');
           expect(error.status).toEqual(404);
         })
       ;
@@ -76,7 +77,7 @@ describe('api/notes', function() {
     test('should return the an updated note', () => {
       //return is key, superagent will wait til resolved
       let id = 'testID';
-      Note.allNotes[id] = {title: 'title', contents: 'body'};
+      Note.allNotes[id] = {id: id, title: 'title', contents: 'body'};
       return superagent.patch(`${url}?id=${id}`)
         .set('Content-Type', 'application/json')
         .send({
@@ -125,8 +126,8 @@ describe('api/notes', function() {
           contents: 'this is the body',
         })
         .catch(error => {
-          expect(error.response.res.text).toEqual('need an ID to put');
-          expect(error.status).toEqual(404);
+          expect(error.response.res.text).toEqual('need ID');
+          expect(error.status).toEqual(400);
         });
     });
   });
@@ -148,7 +149,7 @@ describe('api/notes', function() {
         });
     });
 
-    test('should respond with a 400', () => {
+    test('should respond with a 400 if no title', () => {
       return superagent.post(url)
         .set('Content-Type', 'application/json')
         .send({
@@ -159,7 +160,7 @@ describe('api/notes', function() {
         });
     });
 
-    test('should respond with a 400', () => {
+    test('should respond with a 400 if no contents', () => {
       return superagent.post(url)
         .set('Content-Type', 'application/json')
         .send({

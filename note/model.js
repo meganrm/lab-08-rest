@@ -15,6 +15,11 @@ class Note {
   toString() {
   }
 
+  deleteNote(){
+    Note.allNotes[this.id] = null;
+    delete Note.allNotes[this.id];
+  }
+
   addNote() {
     Note.allNotes[this.id] = this;
   }
